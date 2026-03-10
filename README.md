@@ -1,6 +1,8 @@
 # Axiom AFC (Autonomous Financial Controller)
 
-![Axiom Logo](axiom_logo.jpg)
+<p align="center">
+  <img src="axiom_logo.jpg" alt="Axiom Logo" width="320" />
+</p>
 
 Axiom is an autonomous treasury and payout agent designed for the Tether Hackathon Galáctica: WDK Edition 1.
 
