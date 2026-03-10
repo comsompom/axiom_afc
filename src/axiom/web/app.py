@@ -74,7 +74,7 @@ def create_app() -> Flask:
             {"name": "Status API", "path": "/api/status", "description": "JSON snapshot for current status"},
             {"name": "Activity API", "path": "/api/activity", "description": "JSON activity feed (supports filters)"},
         ]
-        return render_template("home.html", menu_links=menu_links)
+        return render_template("home.html", menu_links=menu_links, current_page="home")
 
     @app.get("/dashboard")
     def dashboard():
@@ -92,7 +92,7 @@ def create_app() -> Flask:
             bridge_fee_usdt=settings.bridge_fee_usdt,
         )
         status = collect_status(settings, wallet, github, market)
-        return render_template("dashboard.html", status=status)
+        return render_template("dashboard.html", status=status, current_page="dashboard")
 
     @app.get("/api/status")
     def api_status():
@@ -127,6 +127,7 @@ def create_app() -> Flask:
             selected_action=action or "",
             selected_status=status or "",
             selected_limit=limit,
+            current_page="activity",
         )
 
     @app.get("/api/activity")

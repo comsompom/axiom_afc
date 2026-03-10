@@ -7,6 +7,9 @@
   <style>
     body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; }
     .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .topnav { margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .navbtn { display: inline-block; background: #1f2937; color: #e2e8f0; padding: 8px 10px; border-radius: 8px; text-decoration: none; font-size: 13px; }
+    .navbtn.active { background: #2563eb; color: #ffffff; }
     .title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
     .subtitle { color: #94a3b8; margin-bottom: 18px; }
     .actions { margin-bottom: 10px; }
@@ -25,13 +28,9 @@
 </head>
 <body>
   <div class="container">
+    {% include "_nav.html" %}
     <div class="title">Axiom Activity</div>
     <div class="subtitle">Live view of recent autonomous actions.</div>
-    <div class="actions">
-      <a class="btn" href="/">Home</a>
-      <a class="btn" href="/dashboard">Dashboard</a>
-      <a class="btn" href="/api/activity">Activity API</a>
-    </div>
     <div class="card" style="margin-bottom: 12px;">
       <form id="filter-form">
         <label for="action">Action</label>

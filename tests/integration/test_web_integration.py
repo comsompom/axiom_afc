@@ -39,11 +39,13 @@ class WebIntegrationTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b"Axiom Web Console", resp.data)
         self.assertIn(b"/dashboard", resp.data)
+        self.assertIn(b"navbtn active", resp.data)
 
     def test_dashboard_renders(self) -> None:
         resp = self.client.get("/dashboard")
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b"Axiom Dashboard", resp.data)
+        self.assertIn(b"navbtn active", resp.data)
 
     def test_status_api_returns_expected_shape(self) -> None:
         resp = self.client.get("/api/status")
