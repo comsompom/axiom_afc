@@ -32,6 +32,10 @@ class Settings:
     github_token: str
     apy_api_url: str
     gas_api_url: str
+    contributor_wallets_path: str
+    token_map_path: str
+    protocol_map_path: str
+    default_chain: str
 
 
 def load_settings() -> Settings:
@@ -55,4 +59,8 @@ def load_settings() -> Settings:
         github_token=os.getenv("GITHUB_TOKEN", ""),
         apy_api_url=os.getenv("APY_API_URL", "https://yields.llama.fi/pools"),
         gas_api_url=os.getenv("GAS_API_URL", "").strip(),
+        contributor_wallets_path=os.getenv("CONTRIBUTOR_WALLETS_PATH", "data/contributor_wallets.json").strip(),
+        token_map_path=os.getenv("TOKEN_MAP_PATH", "config/token_map.json").strip(),
+        protocol_map_path=os.getenv("PROTOCOL_MAP_PATH", "config/protocol_map.json").strip(),
+        default_chain=os.getenv("DEFAULT_CHAIN", "arbitrum").strip().lower(),
     )

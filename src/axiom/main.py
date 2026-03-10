@@ -64,6 +64,7 @@ def main() -> None:
         owner=settings.github_repo_owner,
         repo=settings.github_repo_name,
         token=settings.github_token,
+        contributor_wallets_path=settings.contributor_wallets_path,
     )
     market = MarketClient(
         apy_api_url=settings.apy_api_url,

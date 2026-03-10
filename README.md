@@ -72,6 +72,12 @@ Key controls:
 - `EVALUATION_INTERVAL_SECONDS=600` (10 minutes default)
 - `GITHUB_REPO_OWNER`, `GITHUB_REPO_NAME`, `GITHUB_TOKEN`
 - `MIN_LIQUID_USDT`, `PR_PAYOUT_USDT`, `VOLATILITY_HEDGE_PERCENT`
+- `CONTRIBUTOR_WALLETS_PATH`, `TOKEN_MAP_PATH`, `PROTOCOL_MAP_PATH`, `DEFAULT_CHAIN`
+
+WDK integration artifact files:
+- `config/token_map.json`: token addresses + decimals by chain
+- `config/protocol_map.json`: lending/swap route metadata
+- `data/contributor_wallets.json`: GitHub username -> payout wallet mapping
 
 ## WDK integration notes
 

@@ -8,5 +8,11 @@ from axiom.wallet.wdk_wallet_client import WdkWalletClient
 
 def build_wallet_client(settings: Settings) -> WalletClient:
     if settings.wallet_mode == "wdk":
-        return WdkWalletClient(module_name=settings.wdk_module)
+        return WdkWalletClient(
+            module_name=settings.wdk_module,
+            token_map_path=settings.token_map_path,
+            protocol_map_path=settings.protocol_map_path,
+            allowed_chains=settings.allowed_chains,
+            default_chain=settings.default_chain,
+        )
     return MockWalletClient()
