@@ -16,5 +16,6 @@ def build_wallet_client(settings: Settings) -> WalletClient:
             default_chain=settings.default_chain,
             wdk_service_url=settings.wdk_service_url,
             timeout_seconds=settings.wdk_service_timeout_seconds,
+            api_key=settings.wdk_service_api_key,
         )
     return MockWalletClient()

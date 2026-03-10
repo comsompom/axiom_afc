@@ -44,6 +44,7 @@ class WdkWalletClientTests(unittest.TestCase):
             default_chain="polygon",
             wdk_service_url="http://localhost:8787",
             timeout_seconds=5,
+            api_key="secret-key",
         )
 
     def tearDown(self) -> None:
@@ -64,6 +65,28 @@ class WdkWalletClientTests(unittest.TestCase):
         with patch.object(self.client, "_call_service", return_value={"ok": True, "tx_hash": "0x123"}):
             tx_hash = self.client.transfer("USDT", "0xFrom", "0xTo", 1.0, "polygon")
             self.assertEqual(tx_hash, "0x123")
+
+    def test_call_service_includes_api_key_header(self) -> None:
+        captured = {}
+
+        class _Resp:
+            def read(self):
+                return b'{"ok": true, "balance": "1"}'
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        def _fake_urlopen(req, timeout):
+            headers = {k.lower(): v for k, v in req.header_items()}
+            captured["x-api-key"] = headers.get("x-api-key")
+            return _Resp()
+
+        with patch("axiom.wallet.wdk_wallet_client.urlopen", side_effect=_fake_urlopen):
+            self.client._call_service("/balance", {"chain": "polygon"})  # noqa: SLF001
+        self.assertEqual(captured["x-api-key"], "secret-key")
 
 
 if __name__ == "__main__":

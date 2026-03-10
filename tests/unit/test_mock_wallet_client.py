@@ -27,6 +27,10 @@ class MockWalletClientTests(unittest.TestCase):
         self.assertIn("mock-deposit-bnb-", tx_hash)
         self.assertEqual(self.wallet.get_balance(from_addr, "USDT"), 1800.0)
 
+    def test_transfer_raises_when_insufficient_balance(self) -> None:
+        with self.assertRaises(RuntimeError):
+            self.wallet.transfer("USDT", "0xCheckingWallet", "0xRecipient", 999999, "polygon")
+
 
 if __name__ == "__main__":
     unittest.main()

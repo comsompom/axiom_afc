@@ -105,6 +105,7 @@ Test suites included:
 
 - `WALLET_MODE=wdk`
 - `WDK_SERVICE_URL=http://127.0.0.1:8787`
+- `WDK_SERVICE_API_KEY=<shared-secret>` (recommended for local service auth)
 - `ENABLE_HEDGE=false` (currently requested)
 - `ENABLE_YIELD_MOVES=false` (safe default until live deposit route is configured)
 

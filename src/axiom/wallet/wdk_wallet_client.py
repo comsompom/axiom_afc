@@ -25,10 +25,12 @@ class WdkWalletClient(WalletClient):
         default_chain: str,
         wdk_service_url: str,
         timeout_seconds: int,
+        api_key: str = "",
     ) -> None:
         self.module_name = module_name
         self.wdk_service_url = wdk_service_url.rstrip("/")
         self.timeout_seconds = timeout_seconds
+        self.api_key = api_key
         self.allowed_chains = {c.lower() for c in allowed_chains}
         self.default_chain = default_chain.lower()
         self.token_map = self._load_json(token_map_path, "token map")
@@ -88,10 +90,13 @@ class WdkWalletClient(WalletClient):
 
     def _call_service(self, endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps(payload).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["x-api-key"] = self.api_key
         req = Request(
             f"{self.wdk_service_url}{endpoint}",
             data=body,
-            headers={"Content-Type": "application/json"},
+            headers=headers,
             method="POST",
         )
         try:

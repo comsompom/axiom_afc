@@ -20,6 +20,22 @@ def _safe_balance(wallet: WalletClient, address: str, token: str) -> tuple[float
         return None, str(exc)
 
 
+def _build_clients(settings: Settings) -> tuple[WalletClient, GithubClient, MarketClient]:
+    wallet = build_wallet_client(settings)
+    github = GithubClient(
+        owner=settings.github_repo_owner,
+        repo=settings.github_repo_name,
+        token=settings.github_token,
+        contributor_wallets_path=settings.contributor_wallets_path,
+    )
+    market = MarketClient(
+        apy_api_url=settings.apy_api_url,
+        gas_api_url=settings.gas_api_url,
+        bridge_fee_usdt=settings.bridge_fee_usdt,
+    )
+    return wallet, github, market
+
+
 def collect_status(
     settings: Settings,
     wallet: WalletClient,
@@ -79,36 +95,14 @@ def create_app() -> Flask:
     @app.get("/dashboard")
     def dashboard():
         settings = load_settings()
-        wallet = build_wallet_client(settings)
-        github = GithubClient(
-            owner=settings.github_repo_owner,
-            repo=settings.github_repo_name,
-            token=settings.github_token,
-            contributor_wallets_path=settings.contributor_wallets_path,
-        )
-        market = MarketClient(
-            apy_api_url=settings.apy_api_url,
-            gas_api_url=settings.gas_api_url,
-            bridge_fee_usdt=settings.bridge_fee_usdt,
-        )
+        wallet, github, market = _build_clients(settings)
         status = collect_status(settings, wallet, github, market)
         return render_template("dashboard.html", status=status, current_page="dashboard")
 
     @app.get("/api/status")
     def api_status():
         settings = load_settings()
-        wallet = build_wallet_client(settings)
-        github = GithubClient(
-            owner=settings.github_repo_owner,
-            repo=settings.github_repo_name,
-            token=settings.github_token,
-            contributor_wallets_path=settings.contributor_wallets_path,
-        )
-        market = MarketClient(
-            apy_api_url=settings.apy_api_url,
-            gas_api_url=settings.gas_api_url,
-            bridge_fee_usdt=settings.bridge_fee_usdt,
-        )
+        wallet, github, market = _build_clients(settings)
         status = collect_status(settings, wallet, github, market)
         return jsonify(status)
 

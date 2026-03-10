@@ -5,13 +5,14 @@ This service bridges Python agent logic to real WDK Node modules.
 ## Setup
 
 1. Copy `.env.example` to `.env` and set `WDK_SEED_PHRASE`.
-2. Install dependencies:
+2. Optionally set `WDK_SERVICE_API_KEY` and the same key in Python `.env` as `WDK_SERVICE_API_KEY`.
+3. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Start service:
+4. Start service:
 
 ```bash
 npm start

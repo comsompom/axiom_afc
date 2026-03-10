@@ -5,13 +5,15 @@ import WalletManagerEvm from "@tetherto/wdk-wallet-evm";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "32kb" }));
 
 const PORT = Number(process.env.PORT || 8787);
+const HOST = process.env.HOST || "127.0.0.1";
+const API_KEY = process.env.WDK_SERVICE_API_KEY || "";
 
 const CHAIN_CONFIG = {
-  bnb: { provider: process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org" },
-  polygon: { provider: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com" },
+  bnb: { provider: process.env.BSC_RPC_URL || "https://bsc-rpc.publicnode.com" },
+  polygon: { provider: process.env.POLYGON_RPC_URL || "https://polygon-bor-rpc.publicnode.com" },
 };
 
 const ERC20_ABI = [
@@ -95,6 +97,20 @@ function extractHash(result) {
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.use((req, res, next) => {
+  if (!API_KEY) {
+    return next();
+  }
+  if (req.path === "/health") {
+    return next();
+  }
+  const provided = req.header("x-api-key");
+  if (!provided || provided !== API_KEY) {
+    return res.status(401).json({ ok: false, error: "Unauthorized request." });
+  }
+  return next();
 });
 
 app.post("/balance", async (req, res) => {
@@ -227,6 +243,6 @@ app.post("/swap", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Axiom WDK service listening on http://127.0.0.1:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Axiom WDK service listening on http://${HOST}:${PORT}`);
 });

@@ -22,14 +22,22 @@ class MockWalletClient(WalletClient):
         return float(self._balances[self._key(address, token)])
 
     def transfer(self, token: str, from_address: str, to_address: str, amount: float, chain: str) -> str:
+        if amount <= 0:
+            raise RuntimeError("Transfer amount must be positive.")
         key_from = self._key(from_address, token)
         key_to = self._key(to_address, token)
+        if self._balances[key_from] < amount:
+            raise RuntimeError("Insufficient mock balance for transfer.")
         self._balances[key_from] -= amount
         self._balances[key_to] += amount
         return f"mock-tx-{chain}-{uuid.uuid4().hex[:10]}"
 
     def move_to_yield(self, token: str, from_address: str, amount: float, chain: str, protocol: str) -> str:
+        if amount <= 0:
+            raise RuntimeError("Yield move amount must be positive.")
         key_from = self._key(from_address, token)
+        if self._balances[key_from] < amount:
+            raise RuntimeError("Insufficient mock balance for yield move.")
         self._balances[key_from] -= amount
         self._balances[self._key(f"yield:{chain}:{protocol}", token)] += amount
         return f"mock-deposit-{chain}-{uuid.uuid4().hex[:10]}"

@@ -38,6 +38,7 @@ class Settings:
     default_chain: str
     wdk_service_url: str
     wdk_service_timeout_seconds: int
+    wdk_service_api_key: str
     enable_yield_moves: bool
     activity_log_path: str
 
@@ -69,6 +70,7 @@ def load_settings() -> Settings:
         default_chain=os.getenv("DEFAULT_CHAIN", "arbitrum").strip().lower(),
         wdk_service_url=os.getenv("WDK_SERVICE_URL", "http://127.0.0.1:8787").strip(),
         wdk_service_timeout_seconds=int(os.getenv("WDK_SERVICE_TIMEOUT_SECONDS", "20")),
+        wdk_service_api_key=os.getenv("WDK_SERVICE_API_KEY", "").strip(),
         enable_yield_moves=_bool_env("ENABLE_YIELD_MOVES", False),
         activity_log_path=os.getenv("ACTIVITY_LOG_PATH", "data/activity_log.jsonl").strip(),
     )
