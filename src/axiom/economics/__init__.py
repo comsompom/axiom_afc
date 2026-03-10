@@ -1,0 +1,1 @@
+"""Economic checks package."""
