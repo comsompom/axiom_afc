@@ -36,6 +36,9 @@ class Settings:
     token_map_path: str
     protocol_map_path: str
     default_chain: str
+    wdk_service_url: str
+    wdk_service_timeout_seconds: int
+    enable_yield_moves: bool
 
 
 def load_settings() -> Settings:
@@ -63,4 +66,7 @@ def load_settings() -> Settings:
         token_map_path=os.getenv("TOKEN_MAP_PATH", "config/token_map.json").strip(),
         protocol_map_path=os.getenv("PROTOCOL_MAP_PATH", "config/protocol_map.json").strip(),
         default_chain=os.getenv("DEFAULT_CHAIN", "arbitrum").strip().lower(),
+        wdk_service_url=os.getenv("WDK_SERVICE_URL", "http://127.0.0.1:8787").strip(),
+        wdk_service_timeout_seconds=int(os.getenv("WDK_SERVICE_TIMEOUT_SECONDS", "20")),
+        enable_yield_moves=_bool_env("ENABLE_YIELD_MOVES", False),
     )

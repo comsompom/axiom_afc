@@ -1,25 +1,31 @@
 {
   "lending": {
-    "arbitrum": {
-      "aave-v3": {
-        "pool_address": "0x0000000000000000000000000000000000000000"
+    "bnb": {
+      "venus": {
+        "market": "venus-v4",
+        "pool_address": "0x0000000000000000000000000000000000000000",
+        "notes": "Use Venus lending route on BNB chain through WDK/Openclaw integration."
       }
     },
-    "base": {
+    "polygon": {
       "aave-v3": {
-        "pool_address": "0x0000000000000000000000000000000000000000"
+        "market": "aave-v3",
+        "pool_address": "0x0000000000000000000000000000000000000000",
+        "notes": "Use Aave V3 pool route on Polygon through WDK/Openclaw integration."
       }
     }
   },
   "swap": {
-    "arbitrum": {
-      "USDt_to_XAUt": {
-        "router_address": "0x0000000000000000000000000000000000000000"
+    "bnb": {
+      "USDT_to_BINOM": {
+        "router": "pancakeswap-v3",
+        "notes": "Optional route; configure exact router/quoter addresses based on your SDK."
       }
     },
-    "base": {
-      "USDt_to_XAUt": {
-        "router_address": "0x0000000000000000000000000000000000000000"
+    "polygon": {
+      "USDT_to_BINOM": {
+        "router": "quickswap-v2",
+        "notes": "Optional route; configure exact router/quoter addresses based on your SDK."
       }
     }
   }

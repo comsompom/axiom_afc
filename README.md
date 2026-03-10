@@ -4,170 +4,80 @@
   <img src="axiom_logo.jpg" alt="Axiom Logo" width="320" />
 </p>
 
-Axiom is an autonomous treasury and payout agent designed for the Tether Hackathon Galáctica: WDK Edition 1.
+Axiom is an autonomous treasury and payout agent for the Tether WDK hackathon.
 
-It implements the required **Rule -> Work -> Settle** flow:
-- Rule: keep a minimum liquid USDt reserve, lend excess funds where profitable, and pay contributors when PRs are merged.
-- Work: continuously evaluate GitHub events, wallet balances, APY, gas, and bridge costs.
-- Settle: execute wallet transfers and treasury allocation actions.
+It follows the required flow:
+- Rule: keep a liquid reserve, reward contributors, deploy excess only when profitable.
+- Work: evaluate GitHub merges, balances, APY, gas, and constraints.
+- Settle: execute transactions through wallet tools.
 
-## Why this repo matches the hackathon requirements
+## Architecture
 
-- Uses a dedicated **WDK wallet adapter** interface (`src/axiom/wallet/wdk_wallet_client.py`) for real self-custodial wallet execution.
-- Includes an autonomous execution loop (`src/axiom/agent/engine.py`) with no manual transaction trigger.
-- Includes an explicit profitability checker (`src/axiom/economics/profitability.py`) before moving funds.
-- Includes clear local run instructions and mock mode for judge-friendly evaluation.
-- Includes Apache 2.0 license as required.
+- Python agent runtime: `src/axiom/*`
+- Wallet abstraction: `src/axiom/wallet/wallet_client.py`
+- WDK bridge client (Python -> Node): `src/axiom/wallet/wdk_wallet_client.py`
+- WDK Node service (real WDK packages): `wdk_service/server.js`
 
-## Current implementation modes
+## Real WDK integration model
 
-- `mock` mode (default): fully runnable out of the box with simulated balances/transactions.
-- `wdk` mode: production adapter stub wired for WDK SDK integration through environment-driven import.
+WDK official quickstarts are Node-first (`@tetherto/*` npm packages), so this repo runs:
+- Python for autonomous decision logic
+- Node service for real WDK wallet execution
 
-This keeps the project testable now while preserving a clean path to full WDK execution.
+References:
+- [Node.js & Bare Quickstart](https://docs.wdk.tether.io/start-building/nodejs-bare-quickstart)
+- [Build with AI](https://docs.wdk.tether.io/start-building/build-with-ai)
 
-## Project structure
+## Project files you must configure
 
-- `src/axiom/main.py`: CLI entrypoint
-- `src/axiom/agent/engine.py`: autonomous decision loop
-- `src/axiom/economics/profitability.py`: economic soundness checks
-- `src/axiom/github/github_client.py`: merged PR trigger source
-- `src/axiom/market/market_client.py`: APY + gas + volatility source
-- `src/axiom/wallet/*.py`: wallet interfaces, mock wallet, WDK wallet adapter
-- `rules/mandate.example.json`: example natural-language mandate encoded as config
+- `config/token_map.json` token addresses and decimals per chain
+- `config/protocol_map.json` protocol route metadata
+- `data/contributor_wallets.json` GitHub username -> payout wallet
+- `.env` runtime configuration
+- `wdk_service/.env` WDK seed phrase + RPC URLs
 
-## Setup
+## Run locally (real WDK path)
 
-1. Create and activate a Python 3.11+ virtual environment.
-2. Install dependencies:
+1) Python setup:
 
 ```bash
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Copy env template:
+2) Create Python env:
 
 ```bash
 copy .env.example .env
 ```
 
-4. Run once in mock mode:
+3) Node WDK service setup:
 
 ```bash
+cd wdk_service
+copy .env.example .env
+npm install
+npm start
+```
+
+4) In another terminal, run the agent:
+
+```bash
+cd ..
 python run.py --rules rules/mandate.example.json --once
 ```
 
-5. Run continuously:
+## Important env switches
 
-```bash
-python run.py --rules rules/mandate.example.json
-```
+- `WALLET_MODE=wdk`
+- `WDK_SERVICE_URL=http://127.0.0.1:8787`
+- `ENABLE_HEDGE=false` (currently requested)
+- `ENABLE_YIELD_MOVES=false` (safe default until live deposit route is configured)
 
-## Environment variables
+## Notes on current production readiness
 
-See `.env.example`.
-
-Key controls:
-- `WALLET_MODE=mock|wdk`
-- `EVALUATION_INTERVAL_SECONDS=600` (10 minutes default)
-- `GITHUB_REPO_OWNER`, `GITHUB_REPO_NAME`, `GITHUB_TOKEN`
-- `MIN_LIQUID_USDT`, `PR_PAYOUT_USDT`, `VOLATILITY_HEDGE_PERCENT`
-- `CONTRIBUTOR_WALLETS_PATH`, `TOKEN_MAP_PATH`, `PROTOCOL_MAP_PATH`, `DEFAULT_CHAIN`
-
-WDK integration artifact files:
-- `config/token_map.json`: token addresses + decimals by chain
-- `config/protocol_map.json`: lending/swap route metadata
-- `data/contributor_wallets.json`: GitHub username -> payout wallet mapping
-
-## WDK integration notes
-
-The class `WdkWalletClient` is intentionally isolated behind `WalletClient` protocol.  
-To activate real WDK execution:
-
-1. Install and configure the official WDK SDK per docs.
-2. Set:
-   - `WALLET_MODE=wdk`
-   - `WDK_MODULE` to your installed module path
-3. Implement/wire SDK-specific method calls in `WdkWalletClient`.
-
-## Third-party services disclosure
-
-This project can use:
-- GitHub API (merged PR events)
-- DeFiLlama API (APY source, optional)
-- Public gas oracle endpoint (optional, configured via env)
-
-In mock mode, no external APIs are required.
-
-## Demo expectations
-
-For hackathon video, show terminal output proving:
-- merged PR detection
-- profitability decision (including break-even estimate)
-- autonomous payout action
-- autonomous treasury allocation action
-# Axiom (Autonomous Financial Controller)
-
-Axiom is a hackathon-ready autonomous treasury agent scaffold inspired by the solution strategy in `solution.md`.
-
-It demonstrates:
-
-- rule-based autonomous execution loop
-- GitHub merged PR payout triggers
-- treasury liquidity + excess capital deployment decisions
-- economic soundness checks before yield deployment
-- adapter boundaries for WDK/Openclaw/MCP integrations
-
-## Current Scope
-
-This repository ships a working local MVP with mock providers so you can:
-
-- run the agent loop today
-- validate autonomy and decision logs
-- prove profitability constraints are enforced
-
-WDK/Openclaw/real MCP clients are intentionally isolated behind interfaces in `axiom_afc/providers.py` and can be swapped in later without changing core logic.
-
-## Quick Start
-
-Requirements: Python 3.11+
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-python -m axiom_afc.main --iterations 3 --interval-seconds 1
-```
-
-Run tests:
-
-```bash
-python -m unittest discover -s tests -p "test_*.py"
-```
-
-## Agent Behavior
-
-Default mandate:
-
-- keep `500 USDT` liquid
-- if merged PR event exists, pay contributor `50 USDT`
-- deploy excess USDT only if expected return beats move costs and break-even window
-
-Every cycle:
-
-1. pull treasury state
-2. process merged PR payouts
-3. evaluate deployable excess
-4. fetch APY + fees + gas
-5. run profitability checker
-6. execute or skip and log reason
-
-## How to Integrate Real Services
-
-- Replace `MockTreasuryProvider` with WDK-backed wallet and transfer calls.
-- Replace `MockMarketDataProvider` with DeFiLlama/CoinGecko and live gas feeds.
-- Replace `MockGithubEventProvider` with MCP GitHub integration.
-- Replace `MockYieldProvider` with Openclaw strategy execution over Aave/bridges.
-
-## Demo-Friendly Output
-
-`ConsoleReporter` prints cycle-level decisions, calculations, and tx ids (mocked) so you can record a clear autonomy/economic soundness demo for hackathon judging.
+- Payout transfer path is wired for real onchain execution through WDK service.
+- Balance checks support native and ERC20 balances.
+- Deposit endpoint is scaffolded and requires real `pool_address` route values.
+- Swap endpoint is scaffolded and intentionally disabled until a live WDK protocol module route is added.

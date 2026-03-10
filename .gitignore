@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+wdk_service/.env
+wdk_service/node_modules/
+src/axiom/__pycache__/
+src/axiom/*/__pycache__/

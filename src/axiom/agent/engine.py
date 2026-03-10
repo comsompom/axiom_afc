@@ -20,6 +20,7 @@ class AxiomEngine:
         checking_wallet_address: str,
         treasury_wallet_address: str,
         usdt_token: str = "USDt",
+        enable_yield_moves: bool = True,
     ) -> None:
         self.mandate = mandate
         self.wallet = wallet
@@ -28,6 +29,7 @@ class AxiomEngine:
         self.checking_wallet_address = checking_wallet_address
         self.treasury_wallet_address = treasury_wallet_address
         self.usdt_token = usdt_token
+        self.enable_yield_moves = enable_yield_moves
 
     def run(self, once: bool = False) -> None:
         log(f"Starting Axiom loop for mandate: {self.mandate.name}")
@@ -49,27 +51,42 @@ class AxiomEngine:
             return
 
         for event in events:
-            balance = self.wallet.get_balance(self.checking_wallet_address, self.usdt_token)
+            try:
+                balance = self.wallet.get_balance(self.checking_wallet_address, self.usdt_token)
+            except Exception as exc:
+                log(f"Skip payout checks due to wallet balance error: {exc}")
+                return
             if balance < self.mandate.pr_payout_usdt:
                 log(
                     f"Skip payout for {event.author}: "
                     f"insufficient balance ({balance:.2f} {self.usdt_token})."
                 )
                 continue
-            tx_hash = self.wallet.transfer(
-                token=self.usdt_token,
-                from_address=self.checking_wallet_address,
-                to_address=event.payout_address,
-                amount=self.mandate.pr_payout_usdt,
-                chain=self.mandate.allowed_chains[0],
-            )
+            try:
+                tx_hash = self.wallet.transfer(
+                    token=self.usdt_token,
+                    from_address=self.checking_wallet_address,
+                    to_address=event.payout_address,
+                    amount=self.mandate.pr_payout_usdt,
+                    chain=self.mandate.allowed_chains[0],
+                )
+            except Exception as exc:
+                log(f"Payout failed for {event.author}: {exc}")
+                continue
             log(
                 f"Paid {self.mandate.pr_payout_usdt:.2f} {self.usdt_token} to {event.author} "
                 f"for merged PR '{event.title}'. tx={tx_hash}"
             )
 
     def _optimize_treasury(self) -> None:
-        balance = self.wallet.get_balance(self.checking_wallet_address, self.usdt_token)
+        if not self.enable_yield_moves:
+            log("Yield deployment disabled by ENABLE_YIELD_MOVES setting.")
+            return
+        try:
+            balance = self.wallet.get_balance(self.checking_wallet_address, self.usdt_token)
+        except Exception as exc:
+            log(f"Skip treasury optimization due to wallet balance error: {exc}")
+            return
         excess = balance - self.mandate.min_liquid_usdt
         if excess <= 0:
             log(
@@ -109,13 +126,17 @@ class AxiomEngine:
             log(f"Treasury move skipped. {decision.reason}")
             return
 
-        tx_hash = self.wallet.move_to_yield(
-            token=self.usdt_token,
-            from_address=self.checking_wallet_address,
-            amount=excess,
-            chain=best_quote.chain,
-            protocol=best_quote.protocol,
-        )
+        try:
+            tx_hash = self.wallet.move_to_yield(
+                token=self.usdt_token,
+                from_address=self.checking_wallet_address,
+                amount=excess,
+                chain=best_quote.chain,
+                protocol=best_quote.protocol,
+            )
+        except Exception as exc:
+            log(f"Treasury move failed/skipped: {exc}")
+            return
         log(
             f"Moved {excess:.2f} {self.usdt_token} to {best_quote.protocol} on {best_quote.chain}. "
             f"tx={tx_hash}"

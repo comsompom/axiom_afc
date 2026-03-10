@@ -1,21 +1,25 @@
 {
-  "arbitrum": {
-    "USDt": {
-      "address": "0x0000000000000000000000000000000000000000",
-      "decimals": 6
+  "bnb": {
+    "BNB": {
+      "address": "native",
+      "decimals": 18
     },
-    "XAUt": {
-      "address": "0x0000000000000000000000000000000000000000",
-      "decimals": 6
+    "USDT": {
+      "address": "0x55d398326f99059fF775485246999027B3197955",
+      "decimals": 18
     }
   },
-  "base": {
-    "USDt": {
-      "address": "0x0000000000000000000000000000000000000000",
+  "polygon": {
+    "POL": {
+      "address": "native",
+      "decimals": 18
+    },
+    "USDT": {
+      "address": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
       "decimals": 6
     },
-    "XAUt": {
-      "address": "0x0000000000000000000000000000000000000000",
+    "BINOM": {
+      "address": "0x1E7cC69e3E721dEE1525c76632E80efE3CEdc7cC",
       "decimals": 6
     }
   }

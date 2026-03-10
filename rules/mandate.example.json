@@ -1,10 +1,10 @@
 {
   "name": "axiom-default-mandate",
-  "description": "Keep 500 USDt liquid, lend excess funds to the highest APY chain if profitable, and pay 50 USDt on merged PR events.",
+  "description": "Keep 500 USDT liquid, lend excess funds to the highest APY chain if profitable, and pay 50 USDT on merged PR events.",
   "min_liquid_usdt": 500.0,
   "pr_payout_usdt": 50.0,
-  "allowed_chains": ["arbitrum", "base"],
+  "allowed_chains": ["bnb", "polygon"],
   "evaluation_interval_seconds": 600,
-  "volatility_hedge_percent": 0.1,
-  "enable_hedge": true
+  "volatility_hedge_percent": 0.0,
+  "enable_hedge": false
 }

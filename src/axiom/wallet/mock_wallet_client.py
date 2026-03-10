@@ -11,6 +11,9 @@ class MockWalletClient(WalletClient):
         self._balances = defaultdict(float)
         self._balances["0xCheckingWallet:USDt"] = 2000.0
         self._balances["0xTreasuryWallet:USDt"] = 300.0
+        self._balances["0xCheckingWallet:USDT"] = 2000.0
+        self._balances["0xTreasuryWallet:USDT"] = 300.0
+        self._balances["0x107119102c2EC84099cDce3D5eFDE2dcbf4DEB2a:USDT"] = 2000.0
 
     def _key(self, address: str, token: str) -> str:
         return f"{address}:{token}"

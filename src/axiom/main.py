@@ -80,6 +80,7 @@ def main() -> None:
         checking_wallet_address=settings.checking_wallet_address,
         treasury_wallet_address=settings.treasury_wallet_address,
         usdt_token=settings.default_usdt_token,
+        enable_yield_moves=settings.enable_yield_moves,
     )
     engine.run(once=args.once)
 
