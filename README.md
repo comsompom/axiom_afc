@@ -78,6 +78,16 @@ python run_web.py
 
 Open: `http://127.0.0.1:5050`
 
+Main menu page:
+
+- `http://127.0.0.1:5050/`
+- System dashboard: `http://127.0.0.1:5050/dashboard`
+
+Activity page with auto-refresh:
+
+- `http://127.0.0.1:5050/activity`
+- JSON feed: `http://127.0.0.1:5050/api/activity`
+
 ## Test coverage
 
 Run all tests:

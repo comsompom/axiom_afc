@@ -1,0 +1,18 @@
+{"timestamp_utc": "2026-03-10T19:07:20.300644+00:00", "action": "cycle_start", "status": "ok", "details": {"mandate": "m"}}
+{"timestamp_utc": "2026-03-10T19:07:20.300644+00:00", "action": "payout_transfer", "status": "ok", "details": {"author": "alice", "amount": 50, "tx_hash": "0xtransfer"}}
+{"timestamp_utc": "2026-03-10T19:07:20.300644+00:00", "action": "yield_move", "status": "ok", "details": {"amount": 1450, "chain": "polygon", "protocol": "aave-v3", "tx_hash": "0xyield"}}
+{"timestamp_utc": "2026-03-10T19:07:20.306483+00:00", "action": "cycle_start", "status": "ok", "details": {"mandate": "m"}}
+{"timestamp_utc": "2026-03-10T19:07:20.308515+00:00", "action": "payout_transfer", "status": "ok", "details": {"author": "alice", "amount": 50, "tx_hash": "0xtransfer"}}
+{"timestamp_utc": "2026-03-10T19:07:20.308515+00:00", "action": "yield_move", "status": "skipped", "details": {"reason": "disabled"}}
+{"timestamp_utc": "2026-03-10T19:09:39.946102+00:00", "action": "cycle_start", "status": "ok", "details": {"mandate": "m"}}
+{"timestamp_utc": "2026-03-10T19:09:39.947279+00:00", "action": "payout_transfer", "status": "ok", "details": {"author": "alice", "amount": 50, "tx_hash": "0xtransfer"}}
+{"timestamp_utc": "2026-03-10T19:09:39.948371+00:00", "action": "yield_move", "status": "ok", "details": {"amount": 1450, "chain": "polygon", "protocol": "aave-v3", "tx_hash": "0xyield"}}
+{"timestamp_utc": "2026-03-10T19:09:39.948741+00:00", "action": "cycle_start", "status": "ok", "details": {"mandate": "m"}}
+{"timestamp_utc": "2026-03-10T19:09:39.949975+00:00", "action": "payout_transfer", "status": "ok", "details": {"author": "alice", "amount": 50, "tx_hash": "0xtransfer"}}
+{"timestamp_utc": "2026-03-10T19:09:39.950853+00:00", "action": "yield_move", "status": "skipped", "details": {"reason": "disabled"}}
+{"timestamp_utc": "2026-03-10T19:12:18.280197+00:00", "action": "cycle_start", "status": "ok", "details": {"mandate": "m"}}
+{"timestamp_utc": "2026-03-10T19:12:18.281206+00:00", "action": "payout_transfer", "status": "ok", "details": {"author": "alice", "amount": 50, "tx_hash": "0xtransfer"}}
+{"timestamp_utc": "2026-03-10T19:12:18.281206+00:00", "action": "yield_move", "status": "ok", "details": {"amount": 1450, "chain": "polygon", "protocol": "aave-v3", "tx_hash": "0xyield"}}
+{"timestamp_utc": "2026-03-10T19:12:18.281206+00:00", "action": "cycle_start", "status": "ok", "details": {"mandate": "m"}}
+{"timestamp_utc": "2026-03-10T19:12:18.281206+00:00", "action": "payout_transfer", "status": "ok", "details": {"author": "alice", "amount": 50, "tx_hash": "0xtransfer"}}
+{"timestamp_utc": "2026-03-10T19:12:18.281206+00:00", "action": "yield_move", "status": "skipped", "details": {"reason": "disabled"}}

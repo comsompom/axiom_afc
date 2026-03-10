@@ -3,11 +3,12 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 
 from axiom.config import Settings, load_settings
 from axiom.github.github_client import GithubClient
 from axiom.market.market_client import MarketClient
+from axiom.utils.activity_store import filter_activities, read_recent_activities
 from axiom.wallet.factory import build_wallet_client
 from axiom.wallet.wallet_client import WalletClient
 
@@ -66,6 +67,16 @@ def create_app() -> Flask:
     app = Flask(__name__, template_folder=str(Path(__file__).with_name("templates")))
 
     @app.get("/")
+    def home():
+        menu_links = [
+            {"name": "System Dashboard", "path": "/dashboard", "description": "Wallet, chains, APY, and merged PR overview"},
+            {"name": "Activity Dashboard", "path": "/activity", "description": "Live autonomous action stream with filters"},
+            {"name": "Status API", "path": "/api/status", "description": "JSON snapshot for current status"},
+            {"name": "Activity API", "path": "/api/activity", "description": "JSON activity feed (supports filters)"},
+        ]
+        return render_template("home.html", menu_links=menu_links)
+
+    @app.get("/dashboard")
     def dashboard():
         settings = load_settings()
         wallet = build_wallet_client(settings)
@@ -100,6 +111,41 @@ def create_app() -> Flask:
         )
         status = collect_status(settings, wallet, github, market)
         return jsonify(status)
+
+    @app.get("/activity")
+    def activity_page():
+        settings = load_settings()
+        action = request.args.get("action", "").strip() or None
+        status = request.args.get("status", "").strip() or None
+        limit_raw = request.args.get("limit", "100").strip()
+        limit = max(1, min(500, int(limit_raw))) if limit_raw.isdigit() else 100
+        rows = read_recent_activities(settings.activity_log_path, limit=limit)
+        rows = filter_activities(rows, action=action, status=status)
+        return render_template(
+            "activity.html",
+            activity_rows=rows,
+            selected_action=action or "",
+            selected_status=status or "",
+            selected_limit=limit,
+        )
+
+    @app.get("/api/activity")
+    def api_activity():
+        settings = load_settings()
+        action = request.args.get("action", "").strip() or None
+        status = request.args.get("status", "").strip() or None
+        limit_raw = request.args.get("limit", "50").strip()
+        limit = max(1, min(500, int(limit_raw))) if limit_raw.isdigit() else 50
+        rows = read_recent_activities(settings.activity_log_path, limit=limit)
+        rows = filter_activities(rows, action=action, status=status)
+        return jsonify(
+            {
+                "items": rows,
+                "count": len(rows),
+                "filters": {"action": action, "status": status, "limit": limit},
+                "refreshed_at_utc": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
     return app
 

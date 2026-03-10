@@ -39,6 +39,7 @@ class Settings:
     wdk_service_url: str
     wdk_service_timeout_seconds: int
     enable_yield_moves: bool
+    activity_log_path: str
 
 
 def load_settings() -> Settings:
@@ -69,4 +70,5 @@ def load_settings() -> Settings:
         wdk_service_url=os.getenv("WDK_SERVICE_URL", "http://127.0.0.1:8787").strip(),
         wdk_service_timeout_seconds=int(os.getenv("WDK_SERVICE_TIMEOUT_SECONDS", "20")),
         enable_yield_moves=_bool_env("ENABLE_YIELD_MOVES", False),
+        activity_log_path=os.getenv("ACTIVITY_LOG_PATH", "data/activity_log.jsonl").strip(),
     )

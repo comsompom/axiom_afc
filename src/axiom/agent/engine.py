@@ -6,7 +6,7 @@ from axiom.economics.profitability import evaluate_profitability
 from axiom.github.github_client import GithubClient
 from axiom.market.market_client import MarketClient
 from axiom.models import Mandate
-from axiom.utils.logger import log
+from axiom.utils.logger import log, log_action
 from axiom.wallet.wallet_client import WalletClient
 
 
@@ -21,6 +21,7 @@ class AxiomEngine:
         treasury_wallet_address: str,
         usdt_token: str = "USDt",
         enable_yield_moves: bool = True,
+        activity_log_path: str = "data/activity_log.jsonl",
     ) -> None:
         self.mandate = mandate
         self.wallet = wallet
@@ -30,6 +31,7 @@ class AxiomEngine:
         self.treasury_wallet_address = treasury_wallet_address
         self.usdt_token = usdt_token
         self.enable_yield_moves = enable_yield_moves
+        self.activity_log_path = activity_log_path
 
     def run(self, once: bool = False) -> None:
         log(f"Starting Axiom loop for mandate: {self.mandate.name}")
@@ -40,6 +42,7 @@ class AxiomEngine:
             time.sleep(self.mandate.evaluation_interval_seconds)
 
     def run_once(self) -> None:
+        log_action("cycle_start", "ok", {"mandate": self.mandate.name}, self.activity_log_path)
         self._process_pr_rewards()
         self._optimize_treasury()
         self._optional_hedge()
@@ -55,11 +58,18 @@ class AxiomEngine:
                 balance = self.wallet.get_balance(self.checking_wallet_address, self.usdt_token)
             except Exception as exc:
                 log(f"Skip payout checks due to wallet balance error: {exc}")
+                log_action("payout_balance_check", "error", {"error": str(exc)}, self.activity_log_path)
                 return
             if balance < self.mandate.pr_payout_usdt:
                 log(
                     f"Skip payout for {event.author}: "
                     f"insufficient balance ({balance:.2f} {self.usdt_token})."
+                )
+                log_action(
+                    "payout_skip",
+                    "skipped",
+                    {"author": event.author, "reason": "insufficient_balance", "balance": balance},
+                    self.activity_log_path,
                 )
                 continue
             try:
@@ -72,26 +82,46 @@ class AxiomEngine:
                 )
             except Exception as exc:
                 log(f"Payout failed for {event.author}: {exc}")
+                log_action(
+                    "payout_transfer",
+                    "error",
+                    {"author": event.author, "error": str(exc)},
+                    self.activity_log_path,
+                )
                 continue
             log(
                 f"Paid {self.mandate.pr_payout_usdt:.2f} {self.usdt_token} to {event.author} "
                 f"for merged PR '{event.title}'. tx={tx_hash}"
             )
+            log_action(
+                "payout_transfer",
+                "ok",
+                {"author": event.author, "amount": self.mandate.pr_payout_usdt, "tx_hash": tx_hash},
+                self.activity_log_path,
+            )
 
     def _optimize_treasury(self) -> None:
         if not self.enable_yield_moves:
             log("Yield deployment disabled by ENABLE_YIELD_MOVES setting.")
+            log_action("yield_move", "skipped", {"reason": "disabled"}, self.activity_log_path)
             return
         try:
             balance = self.wallet.get_balance(self.checking_wallet_address, self.usdt_token)
         except Exception as exc:
             log(f"Skip treasury optimization due to wallet balance error: {exc}")
+            log_action("yield_balance_check", "error", {"error": str(exc)}, self.activity_log_path)
             return
         excess = balance - self.mandate.min_liquid_usdt
         if excess <= 0:
             log(
                 f"Liquidity reserve respected ({balance:.2f} {self.usdt_token} <= "
                 f"target {self.mandate.min_liquid_usdt:.2f})."
+            )
+            log_action(
+                "yield_move",
+                "skipped",
+                {"reason": "no_excess_balance", "balance": balance},
+                self.activity_log_path,
             )
             return
 
@@ -124,6 +154,12 @@ class AxiomEngine:
 
         if not decision.is_profitable:
             log(f"Treasury move skipped. {decision.reason}")
+            log_action(
+                "yield_move",
+                "skipped",
+                {"reason": "not_profitable", "break_even_days": decision.break_even_days},
+                self.activity_log_path,
+            )
             return
 
         try:
@@ -136,10 +172,22 @@ class AxiomEngine:
             )
         except Exception as exc:
             log(f"Treasury move failed/skipped: {exc}")
+            log_action("yield_move", "error", {"error": str(exc)}, self.activity_log_path)
             return
         log(
             f"Moved {excess:.2f} {self.usdt_token} to {best_quote.protocol} on {best_quote.chain}. "
             f"tx={tx_hash}"
+        )
+        log_action(
+            "yield_move",
+            "ok",
+            {
+                "amount": excess,
+                "chain": best_quote.chain,
+                "protocol": best_quote.protocol,
+                "tx_hash": tx_hash,
+            },
+            self.activity_log_path,
         )
 
     def _optional_hedge(self) -> None:

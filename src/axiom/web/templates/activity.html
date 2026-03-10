@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Axiom Activity</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; }
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 18px; }
+    .actions { margin-bottom: 10px; }
+    .btn { display: inline-block; background: #1f2937; color: #e2e8f0; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 14px; }
+    .meta { margin-top: 10px; color: #94a3b8; font-size: 13px; }
+    input, select { background: #0b1220; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; }
+    label { margin-right: 6px; font-size: 13px; color: #94a3b8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid #1f2937; padding: 8px; text-align: left; font-size: 14px; vertical-align: top; }
+    .ok { color: #22c55e; }
+    .error { color: #ef4444; }
+    .skipped { color: #f59e0b; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">Axiom Activity</div>
+    <div class="subtitle">Live view of recent autonomous actions.</div>
+    <div class="actions">
+      <a class="btn" href="/">Home</a>
+      <a class="btn" href="/dashboard">Dashboard</a>
+      <a class="btn" href="/api/activity">Activity API</a>
+    </div>
+    <div class="card" style="margin-bottom: 12px;">
+      <form id="filter-form">
+        <label for="action">Action</label>
+        <input id="action" name="action" type="text" value="{{ selected_action }}" placeholder="e.g. payout_transfer" />
+        <label for="status" style="margin-left:10px;">Status</label>
+        <select id="status" name="status">
+          <option value="" {% if not selected_status %}selected{% endif %}>all</option>
+          <option value="ok" {% if selected_status == "ok" %}selected{% endif %}>ok</option>
+          <option value="skipped" {% if selected_status == "skipped" %}selected{% endif %}>skipped</option>
+          <option value="error" {% if selected_status == "error" %}selected{% endif %}>error</option>
+        </select>
+        <label for="limit" style="margin-left:10px;">Limit</label>
+        <input id="limit" name="limit" type="number" min="1" max="500" value="{{ selected_limit }}" style="width: 90px;" />
+        <button class="btn" type="submit" style="margin-left:10px;">Apply</button>
+      </form>
+      <div class="actions" style="margin-top:10px;">
+        <button class="btn" type="button" onclick="setPreset('', '', '100')">All</button>
+        <button class="btn" type="button" onclick="setPreset('', 'error', '100')">Errors Only</button>
+        <button class="btn" type="button" onclick="setPreset('payout_transfer', '', '100')">Payout Actions</button>
+        <button class="btn" type="button" onclick="setPreset('yield_move', '', '100')">Yield Actions</button>
+      </div>
+      <div class="meta">Last refresh: <span id="last-refresh">never</span></div>
+    </div>
+    <div class="card">
+      <table id="activity-table">
+        <thead>
+          <tr>
+            <th>Timestamp UTC</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="activity-body">
+          {% for row in activity_rows %}
+          <tr>
+            <td>{{ row.timestamp_utc }}</td>
+            <td>{{ row.action }}</td>
+            <td class="{{ row.status }}">{{ row.status }}</td>
+            <td><pre>{{ row.details }}</pre></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4">No activity yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    function esc(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    function setPreset(action, status, limit) {
+      document.getElementById('action').value = action;
+      document.getElementById('status').value = status;
+      document.getElementById('limit').value = limit;
+      refreshActivity();
+    }
+
+    async function refreshActivity() {
+      try {
+        const action = document.getElementById('action').value.trim();
+        const status = document.getElementById('status').value.trim();
+        const limit = document.getElementById('limit').value.trim() || '100';
+        const params = new URLSearchParams({ limit });
+        if (action) params.set('action', action);
+        if (status) params.set('status', status);
+        const response = await fetch('/api/activity?' + params.toString());
+        const payload = await response.json();
+        const body = document.getElementById('activity-body');
+        const refresh = document.getElementById('last-refresh');
+        body.innerHTML = '';
+        const items = payload.items || [];
+        refresh.textContent = payload.refreshed_at_utc || new Date().toISOString();
+        if (items.length === 0) {
+          body.innerHTML = '<tr><td colspan="4">No activity yet.</td></tr>';
+          return;
+        }
+        for (const item of items) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${esc(item.timestamp_utc || '')}</td>
+            <td>${esc(item.action || '')}</td>
+            <td class="${esc(item.status || '')}">${esc(item.status || '')}</td>
+            <td><pre>${esc(JSON.stringify(item.details || {}, null, 2))}</pre></td>
+          `;
+          body.appendChild(tr);
+        }
+      } catch (_err) {
+        // Keep previous content on transient refresh errors.
+      }
+    }
+    document.getElementById('filter-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      refreshActivity();
+    });
+    refreshActivity();
+    setInterval(refreshActivity, 5000);
+  </script>
+</body>
+</html>
