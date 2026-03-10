@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Axiom Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; }
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 14px; }
+    .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+    .value { font-size: 18px; font-weight: 700; margin-top: 6px; word-break: break-word; }
+    .ok { color: #22c55e; }
+    .warn { color: #f59e0b; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid #1f2937; padding: 8px; text-align: left; font-size: 14px; }
+    a { color: #60a5fa; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">Axiom Dashboard</div>
+    <div class="subtitle">Visual status page for autonomous treasury agent.</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Wallet Mode</div>
+        <div class="value">{{ status.wallet_mode }}</div>
+      </div>
+      <div class="card">
+        <div class="label">Default Token</div>
+        <div class="value">{{ status.default_token }}</div>
+      </div>
+      <div class="card">
+        <div class="label">Checking Balance</div>
+        {% if status.checking_balance_error %}
+        <div class="value warn">{{ status.checking_balance_error }}</div>
+        {% else %}
+        <div class="value ok">{{ "%.6f"|format(status.checking_balance) }}</div>
+        {% endif %}
+      </div>
+      <div class="card">
+        <div class="label">Yield Moves</div>
+        <div class="value">{{ "enabled" if status.yield_moves_enabled else "disabled" }}</div>
+      </div>
+      <div class="card">
+        <div class="label">Hedge</div>
+        <div class="value">{{ "enabled" if status.hedge_enabled else "disabled" }}</div>
+      </div>
+      <div class="card">
+        <div class="label">Merged PR Events</div>
+        <div class="value">{{ status.merged_pr_count }}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 14px;">
+      <div class="label">Chain Quotes</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Chain</th>
+            <th>Protocol</th>
+            <th>APY %</th>
+            <th>Tx Cost (USDT)</th>
+            <th>Bridge Fee (USDT)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for quote in status.chain_quotes %}
+          <tr>
+            <td>{{ quote.chain }}</td>
+            <td>{{ quote.protocol }}</td>
+            <td>{{ quote.apy }}</td>
+            <td>{{ quote.tx_cost_usdt }}</td>
+            <td>{{ quote.bridge_fee_usdt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top: 14px;">
+      <div class="label">Merged PR Preview</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Author</th>
+            <th>Title</th>
+            <th>Payout Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pr in status.merged_pr_preview %}
+          <tr>
+            <td>{{ pr.author }}</td>
+            <td><a href="{{ pr.url }}" target="_blank">{{ pr.title }}</a></td>
+            <td>{{ pr.payout_address }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3">No payout-eligible merged PRs found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -68,6 +68,29 @@ cd ..
 python run.py --rules rules/mandate.example.json --once
 ```
 
+## Run visual Flask app
+
+Start dashboard:
+
+```bash
+python run_web.py
+```
+
+Open: `http://127.0.0.1:5050`
+
+## Test coverage
+
+Run all tests:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py"
+```
+
+Test suites included:
+- unit tests for economics, wallet behavior, GitHub mapping, WDK client conversions/calls
+- integration tests for agent run loop behavior
+- integration tests for Flask dashboard and JSON status API
+
 ## Important env switches
 
 - `WALLET_MODE=wdk`
