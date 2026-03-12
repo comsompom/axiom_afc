@@ -115,3 +115,7 @@ Test suites included:
 - Balance checks support native and ERC20 balances.
 - Deposit endpoint is scaffolded and requires real `pool_address` route values.
 - Swap endpoint is scaffolded and intentionally disabled until a live WDK protocol module route is added.
+
+## Demo Video
+
+- Agent demonstration: [https://www.youtube.com/watch?v=l2iRtFvLGfg](https://www.youtube.com/watch?v=l2iRtFvLGfg)
