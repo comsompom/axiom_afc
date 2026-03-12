@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
+import time
 
 from flask import Flask, jsonify, render_template, request
 
@@ -14,10 +15,15 @@ from axiom.wallet.wallet_client import WalletClient
 
 
 def _safe_balance(wallet: WalletClient, address: str, token: str) -> tuple[float | None, str | None]:
-    try:
-        return wallet.get_balance(address, token), None
-    except Exception as exc:
-        return None, str(exc)
+    last_error = ""
+    for attempt in range(3):
+        try:
+            return wallet.get_balance(address, token), None
+        except Exception as exc:
+            last_error = str(exc)
+            if attempt < 2:
+                time.sleep(0.2)
+    return None, last_error
 
 
 def _build_clients(settings: Settings) -> tuple[WalletClient, GithubClient, MarketClient]:
@@ -81,6 +87,13 @@ def collect_status(
 
 def create_app() -> Flask:
     app = Flask(__name__, template_folder=str(Path(__file__).with_name("templates")))
+
+    @app.after_request
+    def add_no_cache_headers(response):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     @app.get("/")
     def home():

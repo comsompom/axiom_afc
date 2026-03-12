@@ -103,7 +103,7 @@ class WdkWalletClient(WalletClient):
             with urlopen(req, timeout=self.timeout_seconds) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except Exception as exc:
-            raise RuntimeError(f"WDK service request failed: {endpoint}") from exc
+            raise RuntimeError(f"WDK service request failed at {endpoint}: {exc}") from exc
         if not isinstance(data, dict):
             raise RuntimeError(f"WDK service returned invalid response for {endpoint}.")
         if not data.get("ok", False):

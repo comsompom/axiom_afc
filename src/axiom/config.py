@@ -44,7 +44,9 @@ class Settings:
 
 
 def load_settings() -> Settings:
-    load_dotenv()
+    # Override existing process env so .env edits apply without restarting
+    # long-lived Flask sessions during local development.
+    load_dotenv(override=True)
     allowed = [c.strip().lower() for c in os.getenv("ALLOWED_CHAINS", "arbitrum,base").split(",") if c.strip()]
     return Settings(
         wallet_mode=os.getenv("WALLET_MODE", "mock").strip().lower(),
